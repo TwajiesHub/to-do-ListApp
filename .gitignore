@@ -1,0 +1,11 @@
+.env
+.env.*
+todos.db
+.venv/
+node_modules/
+dist/
+__pycache__/
+.pytest_cache/
+.vercel/
+.claude/
+*.log

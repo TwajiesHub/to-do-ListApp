@@ -198,6 +198,14 @@ same-origin both locally and in production, so no CORS middleware is needed.
 - **Neon:** create it from the Vercel dashboard (Storage, then Postgres), which
   adds the environment variables. Set `DATABASE_URL` to the **pooled**
   connection string (the host contains `-pooler`).
+- **Current setup:**
+  - The Vercel project is named `todo`. Live URL: `todo-inky-one-57.vercel.app`.
+  - The function region is London (`lhr1`), next to the database.
+  - A Neon Postgres database in London is connected. `DATABASE_URL` is set for
+    **Production and Preview only**, not Development, so local work falls back
+    to SQLite.
+  - Python 3.14 is installed locally. Check that `pydantic-core` and
+    `psycopg[binary]` have wheels for it before pinning versions.
 - Secrets live only in Vercel's environment settings and in a local `.env`,
   which is gitignored.
 - Every branch push gets a preview URL. `main` is production.

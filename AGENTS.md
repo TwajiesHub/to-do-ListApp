@@ -11,7 +11,7 @@ detects the due date with a small hand-written grammar, shows it as a preview,
 and saves the task with that date.
 
 - Deadline: **Tuesday 29 Sep 2026, 23:59 WAT**
-- Feature cutoff: **Tuesday 29 Sep 2026, 14:00 WAT**. Whatever is merged to `main` by then is what ships.
+- Feature cutoff: **Tuesday 29 Sep 2026, 18:00 WAT**. Whatever is merged to `main` by then is what ships. Target: M3 merged by 17:00.
 
 ## Read these before working
 

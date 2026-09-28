@@ -2,7 +2,7 @@
 
 - Owner: Uwajie Bonnke
 - Context: HNG Internship 15, Stage One
-- Deadline: Tuesday 29 Sep 2026, 23:59 WAT (feature cutoff 14:00 WAT)
+- Deadline: Tuesday 29 Sep 2026, 23:59 WAT (feature cutoff 18:00 WAT)
 - Working name "Tick" can change freely.
 
 ## Problem
