@@ -59,9 +59,11 @@ backend.
 │   ├── hooks/
 │   │   ├── useTodos.js   list state, optimistic updates, cache
 │   │   ├── useToday.js   local date, refreshed so overdue states stay correct
+│   │   ├── useSmartDatesSetting.js  the Smart dates switch, saved in localStorage
 │   │   └── useSmartParse.js  debounced parsing, stale-response guard
 │   ├── components/
 │   │   ├── Header.jsx        title and Smart dates toggle
+│   │   ├── PreviewChip.jsx   the "Due Fri 2 Oct, from ..." chip with a remove button
 │   │   ├── AddTask.jsx       input, date picker, preview chip (empty slot for M3)
 │   │   ├── TodoList.jsx      dnd-kit sortable list
 │   │   ├── TodoItem.jsx      handle, checkbox, title/inline edit, delete
@@ -196,9 +198,13 @@ Notes:
   the "Add date" button for tasks without a date, and the inline editor. The
   editor's date input is uncontrolled and saves on each valid change (years
   below 1000 are ignored while typing). Esc, Enter or blur closes it.
-- **`AddTask`** keeps the typed date in one `dueDate` state, so Smart dates (M3)
-  can set it the same way the picker does. The empty `.add-task-preview` slot
-  under the input is for the preview chip and takes no space while empty.
+- **`AddTask`** keeps the due date in one `dueDate` state that both the picker
+  and Smart dates set, plus a `dateSource` (`none`, `smart`, `picker` or
+  `dismissed`). The chip is shown only for `smart`, and only the chip changes
+  the title: with `picker` or `dismissed`, or with the switch off, the text is
+  saved exactly as typed. The `dismissed` state lasts until the input is
+  cleared or the task is added. The `.add-task-preview` slot under the input
+  holds the chip and takes no space while empty.
 - **Overdue** means `due_date < todayLocal()` and not done.
 - **Toggle** is stored in localStorage as `tick.smartDates`, default `true`.
 

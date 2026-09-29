@@ -35,3 +35,7 @@ export function clearCompletedTodos() {
 export function reorderTodos(ids) {
   return request('/todos/order', { method: 'PUT', body: { ids } })
 }
+
+export function parseText(text, today) {
+  return request('/parse', { method: 'POST', body: { text, today } })
+}

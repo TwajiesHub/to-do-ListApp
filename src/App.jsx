@@ -2,6 +2,7 @@ import AddTask from './components/AddTask.jsx'
 import Footer from './components/Footer.jsx'
 import Header from './components/Header.jsx'
 import TodoList from './components/TodoList.jsx'
+import { useSmartDatesSetting } from './hooks/useSmartDatesSetting.js'
 import { useTodos } from './hooks/useTodos.js'
 import { useToday } from './hooks/useToday.js'
 
@@ -21,11 +22,12 @@ export default function App() {
     reorder,
   } = useTodos()
   const today = useToday()
+  const [smartDates, toggleSmartDates] = useSmartDatesSetting()
 
   return (
     <main className="page">
-      <Header />
-      <AddTask onAdd={add} />
+      <Header smartDates={smartDates} onToggleSmartDates={toggleSmartDates} />
+      <AddTask onAdd={add} today={today} smartDates={smartDates} />
 
       {error && (
         <p className="error-message" role="alert">

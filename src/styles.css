@@ -10,6 +10,7 @@
   --row-height: 48px;
   --radius: 6px;
   --tick-draw-ms: 250ms;
+  --chip-fade-ms: 120ms;
 }
 
 *,
@@ -61,6 +62,57 @@ button {
   margin: 0;
   font-size: 28px;
   font-weight: 700;
+}
+
+/* Smart dates switch */
+
+.smart-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.switch {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+/* The track and knob are drawn on the button so the whole 44px height is tappable. */
+.switch::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 6px;
+  width: 40px;
+  height: 24px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--ink);
+}
+
+.switch[aria-checked='true']::before {
+  background: var(--ink);
+}
+
+.switch[aria-checked='true']::after {
+  left: 26px;
+  background: var(--paper);
 }
 
 /* Buttons */
@@ -128,6 +180,33 @@ button {
 
 .add-task-input::placeholder {
   color: var(--faded-ink);
+}
+
+/* Preview chip */
+
+.preview-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 0 0 0 12px;
+  border: 1px solid var(--ink);
+  font-size: 14px;
+  animation: chip-fade-in var(--chip-fade-ms) ease-out;
+}
+
+.preview-chip-remove {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: none;
+  font-size: 18px;
+}
+
+@keyframes chip-fade-in {
+  from {
+    opacity: 0;
+  }
 }
 
 /* Messages */
@@ -418,5 +497,9 @@ button {
 @media (prefers-reduced-motion: reduce) {
   .check-tick {
     transition: none;
+  }
+
+  .preview-chip {
+    animation: none;
   }
 }
