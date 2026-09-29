@@ -29,7 +29,8 @@ body {
 }
 
 button,
-input {
+input,
+textarea {
   font: inherit;
   color: inherit;
 }
@@ -502,4 +503,113 @@ button {
   .preview-chip {
     animation: none;
   }
+}
+
+/* Tabs */
+
+.tabs {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.tab {
+  min-height: var(--row-height);
+  display: flex;
+  align-items: center;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--faded-ink);
+  text-decoration: none;
+}
+
+.tab[aria-selected='true'] {
+  border-bottom-color: var(--ink);
+  color: var(--ink);
+}
+
+/* Notes */
+
+.text-field {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.text-field::placeholder {
+  color: var(--faded-ink);
+}
+
+.note-body-field {
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.add-note,
+.note-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-note {
+  padding: 16px 0;
+}
+
+.add-note-actions,
+.note-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.note-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+
+.note-item {
+  padding: 12px 0 4px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.note-item.is-pending {
+  opacity: 0.5;
+}
+
+.note-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.note-body {
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.note-edited {
+  margin: 8px 0 0;
+  color: var(--faded-ink);
+  font-size: 14px;
+}
+
+.note-actions .button-text {
+  min-height: 44px;
+  font-size: 14px;
+}
+
+.note-actions .button-text:disabled {
+  cursor: not-allowed;
+}
+
+.note-confirm {
+  font-weight: 700;
 }

@@ -1,59 +1,36 @@
-import AddTask from './components/AddTask.jsx'
-import Footer from './components/Footer.jsx'
+import { useEffect, useState } from 'react'
 import Header from './components/Header.jsx'
-import TodoList from './components/TodoList.jsx'
+import NotesView from './components/NotesView.jsx'
+import TasksView from './components/TasksView.jsx'
+import Tabs, { panelId, tabId } from './components/Tabs.jsx'
+import { useHashTab } from './hooks/useHashTab.js'
 import { useSmartDatesSetting } from './hooks/useSmartDatesSetting.js'
-import { useTodos } from './hooks/useTodos.js'
-import { useToday } from './hooks/useToday.js'
 
 export default function App() {
-  const {
-    todos,
-    loaded,
-    waking,
-    error,
-    dismissError,
-    add,
-    toggle,
-    rename,
-    setDueDate,
-    remove,
-    clearCompleted,
-    reorder,
-  } = useTodos()
-  const today = useToday()
+  const tab = useHashTab()
   const [smartDates, toggleSmartDates] = useSmartDatesSetting()
+
+  // Notes load the first time the tab is opened. After that the tab stays mounted
+  // (just hidden), so switching back is instant and nothing is lost.
+  const [notesOpened, setNotesOpened] = useState(tab === 'notes')
+  useEffect(() => {
+    if (tab === 'notes') setNotesOpened(true)
+  }, [tab])
 
   return (
     <main className="page">
-      <Header smartDates={smartDates} onToggleSmartDates={toggleSmartDates} />
-      <AddTask onAdd={add} today={today} smartDates={smartDates} />
+      <Header showSmartDates={tab === 'tasks'} smartDates={smartDates} onToggleSmartDates={toggleSmartDates} />
+      <Tabs current={tab} />
 
-      {error && (
-        <p className="error-message" role="alert">
-          {error}{' '}
-          <button className="button-text" onClick={dismissError}>
-            Dismiss
-          </button>
-        </p>
+      <section id={panelId('tasks')} role="tabpanel" aria-labelledby={tabId('tasks')} hidden={tab !== 'tasks'}>
+        <TasksView smartDates={smartDates} />
+      </section>
+
+      {notesOpened && (
+        <section id={panelId('notes')} role="tabpanel" aria-labelledby={tabId('notes')} hidden={tab !== 'notes'}>
+          <NotesView />
+        </section>
       )}
-
-      {!loaded && waking && <p className="status-message">Waking up the server…</p>}
-      {loaded && todos.length === 0 && (
-        <p className="status-message">Nothing to do yet. Add your first task above.</p>
-      )}
-
-      <TodoList
-        todos={todos}
-        today={today}
-        onToggle={toggle}
-        onDelete={remove}
-        onRename={rename}
-        onSetDueDate={setDueDate}
-        onReorder={reorder}
-      />
-
-      {loaded && todos.length > 0 && <Footer todos={todos} today={today} onClearCompleted={clearCompleted} />}
     </main>
   )
 }

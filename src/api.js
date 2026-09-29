@@ -39,3 +39,19 @@ export function reorderTodos(ids) {
 export function parseText(text, today) {
   return request('/parse', { method: 'POST', body: { text, today } })
 }
+
+export function getNotes() {
+  return request('/notes')
+}
+
+export function createNote(fields) {
+  return request('/notes', { method: 'POST', body: fields })
+}
+
+export function updateNote(id, fields) {
+  return request(`/notes/${id}`, { method: 'PATCH', body: fields })
+}
+
+export function deleteNote(id) {
+  return request(`/notes/${id}`, { method: 'DELETE' })
+}

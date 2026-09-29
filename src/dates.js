@@ -28,3 +28,13 @@ export function isOverdue(todo, today) {
 export function isDueToday(todo, today) {
   return !todo.done && todo.due_date === today
 }
+
+const EDITED_FORMAT = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }
+
+// A UTC timestamp from the API, shown in the browser's local time: "29 Sept, 09:45".
+// The year is added only when the edit was not this year.
+export function formatEdited(timestamp, now = new Date()) {
+  const edited = new Date(timestamp)
+  const options = edited.getFullYear() === now.getFullYear() ? EDITED_FORMAT : { ...EDITED_FORMAT, year: 'numeric' }
+  return new Intl.DateTimeFormat('en-GB', options).format(edited)
+}
