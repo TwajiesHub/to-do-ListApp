@@ -75,5 +75,24 @@ class ReorderRequest(SQLModel):
     ids: list[int]
 
 
+class ParseRequest(SQLModel):
+    text: str
+    today: date
+
+    @field_validator("text")
+    @classmethod
+    def text_is_valid(cls, text: str) -> str:
+        text = text.strip()
+        if not 1 <= len(text) <= MAX_TITLE_LENGTH:
+            raise ValueError(f"Text must be 1 to {MAX_TITLE_LENGTH} characters")
+        return text
+
+
+class ParseResult(SQLModel):
+    title: str
+    due_date: date | None
+    matched: str | None
+
+
 class DeletedCount(SQLModel):
     deleted: int

@@ -5,12 +5,15 @@ from sqlmodel import Session, select
 from api.db import get_session
 from api.models import (
     DeletedCount,
+    ParseRequest,
+    ParseResult,
     ReorderRequest,
     Todo,
     TodoCreate,
     TodoRead,
     TodoUpdate,
 )
+from api.parser import parse
 
 router = APIRouter(prefix="/api")
 
@@ -93,3 +96,10 @@ def delete_todo(todo_id: int, session: Session = Depends(get_session)) -> Respon
     session.delete(todo)
     session.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/parse", response_model=ParseResult)
+def parse_text(data: ParseRequest) -> ParseResult:
+    """Guess a due date from the end of the text. Saves nothing."""
+    parsed = parse(data.text, data.today)
+    return ParseResult(title=parsed.title, due_date=parsed.due_date, matched=parsed.matched)
