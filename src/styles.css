@@ -1,15 +1,45 @@
 :root {
   --paper: #f7f9fc;
+  --rule: #d3dfee;
   --ink: #1c2a4d;
+  --faded-ink: #62708f;
+  --marking-red: #c93a3a;
+  --focus: #2f6feb;
+
+  --margin-width: 44px;
+  --row-height: 48px;
+  --radius: 6px;
+  --tick-draw-ms: 250ms;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: system-ui, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   font-size: 17px;
   line-height: 1.5;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 .page {
@@ -18,14 +48,262 @@ body {
   padding: 16px;
 }
 
-/* Plain layout only. The TASTE.md styling comes in the next commit. */
-.todo-list { list-style: none; margin: 0; padding: 0; }
-.todo-item { display: flex; align-items: center; gap: 8px; }
-.todo-item.is-pending { opacity: 0.5; }
-.todo-title { flex: 1; text-align: left; background: none; border: 0; font: inherit; color: inherit; }
-.check-box { width: 24px; height: 24px; }
-.check-outline { fill: none; stroke: currentColor; stroke-width: 2; }
-.check-tick { fill: none; stroke: currentColor; stroke-width: 2.5; visibility: hidden; }
-.check-input:checked + .check-box .check-tick { visibility: visible; }
-.check-input { position: absolute; opacity: 0; }
-.is-done .todo-title { opacity: 0.5; }
+/* Header */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* Buttons */
+
+.button-primary {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--ink);
+  color: var(--paper);
+  white-space: nowrap;
+}
+
+.button-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.button-text {
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  text-decoration: underline;
+}
+
+/* Add task */
+
+.add-task {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0 16px;
+}
+
+.add-task-input,
+.edit-input {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.add-task-input {
+  flex: 1;
+}
+
+.add-task-input::placeholder {
+  color: var(--faded-ink);
+}
+
+/* Messages */
+
+.status-message {
+  margin: 16px 0;
+  color: var(--faded-ink);
+}
+
+.error-message {
+  margin: 0 0 16px;
+  padding: 8px 12px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+}
+
+/* Task list. The margin line is drawn on each row so it runs unbroken down the list. */
+
+.todo-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+
+.todo-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: var(--row-height);
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.todo-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--margin-width);
+  width: 1px;
+  background: var(--marking-red);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.todo-item.is-pending {
+  opacity: 0.5;
+}
+
+.todo-item.is-dragging {
+  z-index: 1;
+  border-top: 1px solid var(--rule);
+}
+
+.drag-handle {
+  flex: none;
+  width: var(--margin-width);
+  align-self: stretch;
+  border: 0;
+  background: none;
+  color: var(--faded-ink);
+  cursor: grab;
+  touch-action: none;
+}
+
+.drag-handle[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Checkbox and the hand-drawn tick */
+
+.check {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--row-height);
+  height: var(--row-height);
+}
+
+.check-input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.check-input:disabled {
+  cursor: not-allowed;
+}
+
+.check-box {
+  width: 26px;
+  height: 26px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.check-input:focus-visible + .check-box {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+.check-outline {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.check-tick {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset var(--tick-draw-ms) ease-out;
+}
+
+.check-input:checked + .check-box .check-tick {
+  stroke-dashoffset: 0;
+}
+
+/* Title */
+
+.todo-title {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--row-height);
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: text;
+}
+
+.edit-input {
+  flex: 1;
+  margin: 2px 8px;
+}
+
+.is-done .todo-title {
+  color: var(--faded-ink);
+}
+
+.delete-button {
+  flex: none;
+  width: var(--row-height);
+  height: var(--row-height);
+  border: 0;
+  background: none;
+  color: var(--faded-ink);
+  font-size: 22px;
+}
+
+.delete-button:disabled {
+  cursor: not-allowed;
+}
+
+/* Footer */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+}
+
+.counter {
+  margin: 0;
+  color: var(--faded-ink);
+  font-size: 14px;
+}
+
+.footer .button-text {
+  font-size: 14px;
+}
+
+@media (min-width: 640px) {
+  .page {
+    padding: 48px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .check-tick {
+    transition: none;
+  }
+}

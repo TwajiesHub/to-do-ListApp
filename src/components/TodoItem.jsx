@@ -8,7 +8,7 @@ export default function TodoItem({ todo, reorderLocked, onToggle, onDelete, onRe
   const [draft, setDraft] = useState(todo.title)
   const pending = isPending(todo)
 
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition } =
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } =
     useSortable({ id: todo.id, disabled: reorderLocked })
 
   // Enter and Esc both end the edit. Removing the input then triggers a blur, and
@@ -53,6 +53,7 @@ export default function TodoItem({ todo, reorderLocked, onToggle, onDelete, onRe
     'todo-item',
     todo.done ? 'is-done' : '',
     pending ? 'is-pending' : '',
+    isDragging ? 'is-dragging' : '',
   ].join(' ')
 
   return (
@@ -79,7 +80,11 @@ export default function TodoItem({ todo, reorderLocked, onToggle, onDelete, onRe
         />
         <svg className="check-box" viewBox="0 0 24 24" aria-hidden="true">
           <rect className="check-outline" x="2" y="2" width="20" height="20" rx="5" />
-          <path className="check-tick" d="M6 12.5 L10.5 17 L18 7" />
+          <path
+            className="check-tick"
+            pathLength="1"
+            d="M5.5 13 C7 14.5 8.5 16 10 17.5 C12.5 12.5 15.5 8.5 20 4.5"
+          />
         </svg>
       </label>
 
