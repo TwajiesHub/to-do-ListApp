@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from sqlmodel import SQLModel
 
 from api.db import engine
+from api.notes import router as notes_router
 from api.routes import router
 
 
@@ -19,3 +20,4 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 app.include_router(router)
+app.include_router(notes_router)

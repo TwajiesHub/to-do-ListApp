@@ -1,14 +1,26 @@
 from datetime import date, datetime, timezone
+from typing import Annotated
 
-from pydantic import field_validator
+from pydantic import AfterValidator, field_validator
 from sqlalchemy import Column, DateTime
 from sqlmodel import Field, SQLModel
 
 MAX_TITLE_LENGTH = 200
+MAX_BODY_LENGTH = 5000
 
 
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def as_utc(value: datetime) -> datetime:
+    """SQLite drops the timezone, so a datetime with none came from UTC. Output always ends in Z."""
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
+UtcDateTime = Annotated[datetime, AfterValidator(as_utc)]
 
 
 def clean_title(title: str) -> str:
@@ -17,6 +29,14 @@ def clean_title(title: str) -> str:
     if not 1 <= len(title) <= MAX_TITLE_LENGTH:
         raise ValueError(f"Title must be 1 to {MAX_TITLE_LENGTH} characters")
     return title
+
+
+def clean_body(body: str) -> str:
+    """Use plain line breaks and check the body is at most MAX_BODY_LENGTH characters."""
+    body = body.replace("\r\n", "\n").replace("\r", "\n")
+    if len(body) > MAX_BODY_LENGTH:
+        raise ValueError(f"Body must be at most {MAX_BODY_LENGTH} characters")
+    return body
 
 
 class Todo(SQLModel, table=True):
@@ -68,7 +88,7 @@ class TodoRead(SQLModel):
     done: bool
     position: int
     due_date: date | None
-    created_at: datetime
+    created_at: UtcDateTime
 
 
 class ReorderRequest(SQLModel):
@@ -96,3 +116,56 @@ class ParseResult(SQLModel):
 
 class DeletedCount(SQLModel):
     deleted: int
+
+
+class Note(SQLModel, table=True):
+    __tablename__ = "notes"
+
+    id: int | None = Field(default=None, primary_key=True)
+    title: str = Field(max_length=MAX_TITLE_LENGTH)
+    body: str = Field(default="", max_length=MAX_BODY_LENGTH)
+    created_at: datetime = Field(
+        default_factory=utc_now,
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+    updated_at: datetime = Field(
+        default_factory=utc_now,
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+
+
+class NoteCreate(SQLModel):
+    title: str
+    body: str = ""
+
+    _trim_title = field_validator("title")(clean_title)
+    _clean_body = field_validator("body")(clean_body)
+
+
+class NoteUpdate(SQLModel):
+    """Only the fields that are sent change. To clear the body, send an empty string."""
+
+    title: str | None = None
+    body: str | None = None
+
+    @field_validator("title")
+    @classmethod
+    def title_is_valid(cls, title: str | None) -> str:
+        if title is None:
+            raise ValueError("Title cannot be null")
+        return clean_title(title)
+
+    @field_validator("body")
+    @classmethod
+    def body_is_valid(cls, body: str | None) -> str:
+        if body is None:
+            raise ValueError("Body cannot be null")
+        return clean_body(body)
+
+
+class NoteRead(SQLModel):
+    id: int
+    title: str
+    body: str
+    created_at: UtcDateTime
+    updated_at: UtcDateTime
