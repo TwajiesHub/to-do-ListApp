@@ -42,7 +42,8 @@ backend.
 .
 ├── api/
 │   ├── __init__.py
-│   ├── index.py          FastAPI app and routes (Vercel entrypoint)
+│   ├── index.py          FastAPI app, lifespan, includes the router (Vercel entrypoint)
+│   ├── routes.py         all /api routes (an APIRouter)
 │   ├── db.py             engine, sessions, DATABASE_URL handling
 │   ├── models.py         SQLModel table and request/response schemas
 │   └── parser.py         Smart dates grammar (pure function, stdlib only)
@@ -158,8 +159,11 @@ Notes:
 - **`api/parser.py`**: `parse(text: str, today: date) -> ParseResult`. Pure,
   with no I/O. Regex patterns are compiled once at import with `re.IGNORECASE`
   and tried longest first.
-- **`api/index.py`**: the FastAPI app, table creation in the lifespan handler,
-  and all routes.
+- **`api/routes.py`**: an `APIRouter` with prefix `/api` holding every route.
+  Split out of `index.py` to stay under about 200 lines. The `completed` and
+  `order` routes are declared before `/todos/{todo_id}`.
+- **`api/index.py`**: creates the FastAPI app, creates tables in the lifespan
+  handler, and includes the router from `routes.py`. This is the Vercel entrypoint.
 
 ## Frontend modules
 
