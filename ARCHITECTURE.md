@@ -158,9 +158,13 @@ Notes:
   `get_session` dependency that tests override.
 - **`api/models.py`**: the `Todo` table model, plus `TodoCreate`, `TodoUpdate`,
   `TodoRead`, `ReorderRequest`, `ParseRequest` and `ParseResult`.
-- **`api/parser.py`**: `parse(text: str, today: date) -> ParseResult`. Pure,
-  with no I/O. Regex patterns are compiled once at import with `re.IGNORECASE`
-  and tried longest first.
+- **`api/parser.py`**: `parse(text: str, today: date) -> Parsed`, where `Parsed`
+  is a frozen dataclass `(title, due_date, matched)`. Pure, with no I/O, and
+  imports only `re`, `datetime` and other standard-library modules (no
+  SQLModel), so `POST /api/parse` copies it into the `ParseResult` schema.
+  Regex patterns are compiled once at import with `re.IGNORECASE` and tried
+  longest first. The first pattern that fits decides: an impossible date
+  (31 Feb, 29 Feb in a non-leap year, `in 400 days`) leaves the text alone.
 - **`api/routes.py`**: an `APIRouter` with prefix `/api` holding every route.
   Split out of `index.py` to stay under about 200 lines. The `completed` and
   `order` routes are declared before `/todos/{todo_id}`.
