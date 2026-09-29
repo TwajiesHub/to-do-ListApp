@@ -1,7 +1,8 @@
 # Tick
 
 Tick is a small to-do list web app. You can add, tick off, edit, delete and
-drag tasks into order, and give any task a due date. Its extra feature is
+drag tasks into order, give any task a due date, and keep notes in a separate
+Notes tab. Its extra feature is
 **Smart dates**: type "grade SS2 scripts by Friday" and Tick finds the date,
 shows it to you before saving, and saves the task as "grade SS2 scripts" due on
 Friday.
@@ -26,6 +27,12 @@ server and database wake up. After that, everything is instant.
   "Today", or "Overdue" in red, and the footer counts what is left and what is
   overdue.
 - Everything is saved, so a refresh shows the same tasks in the same order.
+- **Notes tab.** Switch between Tasks and Notes under the title (the tab is kept
+  in the address, so a refresh or the back button stays on it). A note has a
+  required title and an optional body, and line breaks in the body are kept.
+  Notes are listed most recently edited first, each with a faded "Edited" time in
+  your local time. Edit a note in place with Save and Cancel, and delete it with
+  a "Confirm delete" step (no pop-up).
 - Works on a 360px phone screen and on a desktop, and can be used with the
   keyboard alone.
 
@@ -133,8 +140,8 @@ pytest
 ```
 
 The tests use a temporary SQLite file, never `todos.db` and never the
-production database. They cover every endpoint (success, 404 and 422 cases) and
-every example in the Smart dates table. To check the front end, run the app and
+production database. They cover every endpoint for tasks and notes (success, 404 and
+422 cases), that every timestamp ends in `Z`, and every example in the Smart dates table. To check the front end, run the app and
 try it in a browser; the project has no front-end test runner.
 
 ```bash
@@ -144,13 +151,13 @@ npm run build
 ## Things to know
 
 - **One shared list.** There are no accounts, so everyone who opens the live
-  link sees and changes the same tasks.
+  link sees and changes the same tasks and notes.
 - Dates have no year: "by 3 Jan 2027" is left as typed.
 - Words like "on" and "by" count as trigger words, so "hold on tomorrow" reads
   as the task "hold" due tomorrow. The chip shows this before anything is saved,
   and **×** undoes it.
 - Some project choices are deliberate: no reminders, recurring tasks,
-  search or filters. The full list is in [`PRD.md`](PRD.md).
+  search or filters, and no searching notes. The full list is in [`PRD.md`](PRD.md).
 
 ## How AI was used
 

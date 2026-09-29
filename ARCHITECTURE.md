@@ -35,6 +35,8 @@ backend.
 | Optimistic updates | A network round trip takes about 100–300ms. The screen updates immediately, and the request runs in the background. |
 | Integer `position`, fully rewritten on reorder | Simple and atomic, and fine for dozens of tasks. Fractional indexing is a possible later upgrade. |
 | `due_date` column exists from M0 | No migrations are needed later in the week. |
+| Current tab in the URL hash | A refresh and the back button keep the tab, with no router library. |
+| UTC timestamps always end in `Z` | SQLite loses the timezone. The browser needs it to show local time correctly. |
 
 ## Folder structure
 
@@ -43,13 +45,15 @@ backend.
 ├── api/
 │   ├── __init__.py
 │   ├── index.py          FastAPI app, lifespan, includes the router (Vercel entrypoint)
-│   ├── routes.py         all /api routes (an APIRouter)
+│   ├── routes.py         task and parse routes (an APIRouter)
+│   ├── notes.py          note routes (an APIRouter)
 │   ├── db.py             engine, sessions, DATABASE_URL handling
 │   ├── models.py         SQLModel table and request/response schemas
 │   └── parser.py         Smart dates grammar (pure function, stdlib only)
 ├── tests/
 │   ├── conftest.py       temporary SQLite database and TestClient fixtures
-│   ├── test_todos.py     endpoint tests
+│   ├── test_todos.py     task endpoint tests
+│   ├── test_notes.py     note endpoint tests and the UTC "Z" timestamp checks
 │   └── test_parser.py    parser tests, one per PRD example
 ├── src/
 │   ├── main.jsx
@@ -58,11 +62,18 @@ backend.
 │   ├── dates.js          today-in-local-time and date formatting helpers
 │   ├── hooks/
 │   │   ├── useTodos.js   list state, optimistic updates, cache
+│   │   ├── useNotes.js   notes state, optimistic updates, cache
+│   │   ├── useHashTab.js current tab (tasks or notes) kept in the URL hash
 │   │   ├── useToday.js   local date, refreshed so overdue states stay correct
 │   │   ├── useSmartDatesSetting.js  the Smart dates switch, saved in localStorage
 │   │   └── useSmartParse.js  debounced parsing, stale-response guard
 │   ├── components/
-│   │   ├── Header.jsx        title and Smart dates toggle
+│   │   ├── Header.jsx        title and Smart dates toggle (Tasks tab only)
+│   │   ├── Tabs.jsx          the Tasks | Notes tab switch
+│   │   ├── TasksView.jsx     everything on the Tasks tab (add, list, footer)
+│   │   ├── NotesView.jsx     everything on the Notes tab
+│   │   ├── AddNote.jsx       title and body form
+│   │   ├── NoteItem.jsx      a note with inline edit and inline delete confirm
 │   │   ├── PreviewChip.jsx   the "Due Fri 2 Oct, from ..." chip with a remove button
 │   │   ├── AddTask.jsx       input, date picker, preview chip (empty slot for M3)
 │   │   ├── TodoList.jsx      dnd-kit sortable list
@@ -104,14 +115,28 @@ Table `todos`:
 | `due_date` | date | Nullable |
 | `created_at` | timestamp with time zone | Not null, default now (UTC) |
 
-Tables are created at startup with `SQLModel.metadata.create_all`. There are no
-migrations in v1. If the schema must change, delete the local `todos.db`, and
-ask before touching Neon.
+Table `notes` (added in M5):
+
+| Column | Type | Rules |
+| --- | --- | --- |
+| `id` | integer | Primary key, auto-increment |
+| `title` | varchar(200) | Not null. Trimmed, 1–200 characters |
+| `body` | varchar(5000) | Not null, default empty. At most 5000 characters. Line breaks are stored as newlines |
+| `created_at` | timestamp with time zone | Not null, default now (UTC) |
+| `updated_at` | timestamp with time zone | Not null. Set on create and refreshed by every PATCH that changes something |
+
+Tables are created at startup with `SQLModel.metadata.create_all`, which also
+creates any table that is missing, so `notes` appears by itself on the first
+deploy. There are no migrations in v1. If an existing table's columns must
+change, delete the local `todos.db`, and ask before touching Neon.
 
 ## API contract
 
 - Base path `/api`. JSON bodies with snake_case keys.
-- Dates are `YYYY-MM-DD`. Timestamps are ISO 8601 in UTC.
+- Dates are `YYYY-MM-DD`. Timestamps are ISO 8601 in UTC and **always end in
+  `Z`**. SQLite drops the timezone, so `api/models.py` treats a datetime with no
+  timezone as UTC before it is sent (`UtcDateTime`). Postgres values are
+  converted to UTC too.
 - Interactive docs at `/api/docs` (set `docs_url="/api/docs"` and
   `openapi_url="/api/openapi.json"`).
 
@@ -137,6 +162,10 @@ Todo object:
 | 5 | `DELETE /api/todos/{id}` | none | 204 | 404 |
 | 6 | `PUT /api/todos/order` | `{ids: [int]}` | 200, the reordered list | 422 |
 | 7 | `POST /api/parse` | `{text, today}` | 200, `{title, due_date, matched}` | 422 |
+| 8 | `GET /api/notes` | none | 200, list of notes, most recently edited first | none |
+| 9 | `POST /api/notes` | `{title, body?}` | 201, the new note | 422 |
+| 10 | `PATCH /api/notes/{id}` | any of `{title, body}` | 200, the updated note | 404, 422 |
+| 11 | `DELETE /api/notes/{id}` | none | 204 | 404 |
 
 Notes:
 
@@ -150,6 +179,13 @@ Notes:
 - **Parse:** `text` must be 1–200 characters and `today` a valid date.
   `matched` is the phrase that was recognised (for example `"by Friday"`), or
   `null`. The endpoint saves nothing. Grammar and rules are in `PRD.md`.
+- **Notes:** the note object is `{id, title, body, created_at, updated_at}`.
+  `title` is trimmed and 1–200 characters. `body` is optional (default empty),
+  at most 5000 characters, and Windows line breaks are turned into plain ones.
+  Neither field can be `null` in a PATCH (send an empty string to clear the
+  body). A PATCH that changes at least one field sets `updated_at` to now, and an
+  empty PATCH changes nothing. The list is ordered by `updated_at` descending,
+  then `id` descending.
 
 ## Backend modules
 
@@ -158,8 +194,10 @@ Notes:
   and Vercel supply the plain form). Creates the engine with
   `pool_pre_ping=True`. For SQLite, passes `check_same_thread=False`. Provides a
   `get_session` dependency that tests override.
-- **`api/models.py`**: the `Todo` table model, plus `TodoCreate`, `TodoUpdate`,
-  `TodoRead`, `ReorderRequest`, `ParseRequest` and `ParseResult`.
+- **`api/models.py`**: the `Todo` and `Note` table models, plus `TodoCreate`,
+  `TodoUpdate`, `TodoRead`, `NoteCreate`, `NoteUpdate`, `NoteRead`,
+  `ReorderRequest`, `ParseRequest` and `ParseResult`. `UtcDateTime` is the type
+  that puts a `Z` on every timestamp sent out.
 - **`api/parser.py`**: `parse(text: str, today: date) -> Parsed`, where `Parsed`
   is a frozen dataclass `(title, due_date, matched)`. Pure, with no I/O, and
   imports only `re`, `datetime` and other standard-library modules (no
@@ -167,11 +205,13 @@ Notes:
   Regex patterns are compiled once at import with `re.IGNORECASE` and tried
   longest first. The first pattern that fits decides: an impossible date
   (31 Feb, 29 Feb in a non-leap year, `in 400 days`) leaves the text alone.
-- **`api/routes.py`**: an `APIRouter` with prefix `/api` holding every route.
-  Split out of `index.py` to stay under about 200 lines. The `completed` and
-  `order` routes are declared before `/todos/{todo_id}`.
+- **`api/routes.py`**: an `APIRouter` with prefix `/api` holding the task and
+  parse routes. Split out of `index.py` to stay under about 200 lines. The
+  `completed` and `order` routes are declared before `/todos/{todo_id}`.
+- **`api/notes.py`**: an `APIRouter` with prefix `/api` holding the note routes.
 - **`api/index.py`**: creates the FastAPI app, creates tables in the lifespan
-  handler, and includes the router from `routes.py`. This is the Vercel entrypoint.
+  handler, and includes the routers from `routes.py` and `notes.py`. This is the
+  Vercel entrypoint.
 
 ## Frontend modules
 
@@ -183,11 +223,26 @@ Notes:
   `Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })`,
   which gives "Fri 2 Oct" (September comes out as "Sept"). `isOverdue()` and
   `isDueToday()` compare `YYYY-MM-DD` strings, and done tasks are never either.
+  `formatEdited()` shows a note's UTC `updated_at` in local time, for example
+  "29 Sept, 09:45" (the year is added only for a different year).
 - **`src/hooks/useTodos.js`**: holds the ordered array of todos. On load it
   shows the cached list from localStorage (`tick.todos.v1`), then refreshes from
   the server. Add, toggle, edit, delete, reorder and clear are optimistic, with
   rollback and an error message on failure. A new task gets a temporary negative
   id until the server responds.
+- **`src/hooks/useNotes.js`**: the same pattern as `useTodos`, for notes: a cached
+  list (`tick.notes.v1`), then a refresh from the server, and optimistic add,
+  edit and delete with rollback and the save-error message. Notes are always
+  kept most recently edited first. A new note has a temporary negative id, and its
+  Edit and Delete buttons are disabled until the server replies. An edit moves the
+  note to the top at once, and the server's own `updated_at` replaces the guess.
+- **`src/hooks/useHashTab.js`**: the current tab (`tasks` or `notes`) is read from
+  `location.hash` (`#/tasks`, `#/notes`) and follows `hashchange`, so the back
+  button works. Anything else means Tasks.
+- **`src/components/Tabs.jsx`**: two links with `role="tab"`, moved with the arrow
+  keys, Home and End. `App.jsx` shows each view in a `role="tabpanel"`. The Notes
+  view is mounted the first time its tab opens (so notes load then), and after
+  that both views stay mounted, with the other one `hidden`.
 - **`src/hooks/useSmartParse.js`**: waits 300ms after typing stops, then calls
   `/api/parse`. A request counter ignores responses for older text. Exposes
   `parseNow()` for use when Add is pressed while the preview is stale.

@@ -75,7 +75,19 @@ overdue work stands out without a banner.
   Ink at weight 700, "Overdue" in Marking red. Click it to change or clear the date.
 - **Preview chip:** under the input, outlined in Ink:
   `Due Fri 2 Oct, from "by Friday"` with a × button labelled "Remove due date".
-- **Toggle:** a switch labelled "Smart dates" in the header.
+- **Toggle:** a switch labelled "Smart dates" in the header, on the Tasks tab only.
+- **Tabs:** "Tasks" and "Notes" as plain text under the title, over a Rule line.
+  The current tab is in Ink with a 2px Ink underline. The other is in Faded ink.
+  No pills, boxes or icons. Rows are at least 48px tall.
+- **Note:** a bold title (17px, weight 700), the body underneath with its line
+  breaks kept, then "Edited 29 Sept, 09:45" in Faded ink at 14px, then text
+  buttons "Edit" and "Delete". Notes sit on Rule lines like tasks, with no cards,
+  no margin line and no drag handles.
+- **Note forms:** a title input and a taller text box, styled like the add-task
+  input. "Add note" is a solid Ink button. When editing, "Save" is solid Ink and
+  "Cancel" is a text button, both in place of the note's text.
+- **Confirm delete:** pressing "Delete" swaps "Edit" and "Delete" for a bold
+  "Confirm delete" and "Cancel" in the same place. No modal, no red.
 - **Buttons:** "Add task" is solid Ink with Paper text. Secondary actions are
   text buttons. Corner radius 6px on inputs and buttons only.
 
@@ -100,6 +112,14 @@ Plain, short, sentence case, active verbs. A button says what happens.
 | Clear button | Clear completed |
 | Save error | Couldn't save that change. Check your connection and try again. |
 | Slow first load | Waking up the server… |
+| Note title placeholder | Note title |
+| Note body placeholder | Write a note (optional) |
+| Add note button | Add note |
+| Note edit buttons | Save, Cancel |
+| Note delete buttons | Delete, then Confirm delete and Cancel |
+| Note edit time | Edited 29 Sept, 09:45 |
+| Empty notes | No notes yet. Add your first note above. |
+| Notes load error | Couldn't load your notes. Check your connection and try again. |
 
 - Errors say what happened and what to do. They don't apologise.
 - Success needs no message: the change on screen is the confirmation.

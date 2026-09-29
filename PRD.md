@@ -27,10 +27,11 @@ this with natural-language input. Tick brings a small, free version of that idea
 
 ## Out of scope for v1
 
-User accounts and login, notes tab, reminders and notifications, recurring
+User accounts and login, reminders and notifications, recurring
 tasks, calendar views, search and filters (they conflict with drag-and-drop
 reordering), categories and hashtags, AI or paid APIs, offline editing.
-Priority flags are a stretch goal only, after v1 ships.
+Priority flags are a stretch goal only, after v1 ships. (A Notes tab was out of
+scope until 29 Sep, when it became mandatory. See "Notes tab" below.)
 
 ## Baseline requirements
 
@@ -77,6 +78,25 @@ Priority flags are a stretch goal only, after v1 ships.
 - Stored in the browser (localStorage). No backend endpoint.
 - When off, text is saved exactly as typed.
 - Turning it off never hides dates that are already saved.
+
+## Notes tab (M5)
+
+Added on 29 Sep 2026 as a mandatory requirement. Notes are separate from tasks:
+a note has a title and a longer body, and no due date, checkbox or order.
+
+| ID | Requirement |
+| --- | --- |
+| N1 | **Tabs:** a "Tasks \| Notes" tab switch under the title. The current tab is kept in the URL hash (`#/tasks`, `#/notes`), so a refresh and the back button work. The default is Tasks. The Smart dates switch shows only on Tasks. |
+| N2 | **Add:** a title (required, trimmed, 1–200 characters) and a body (optional, at most 5000 characters). "Add note" is disabled while the title is empty. |
+| N3 | **List:** most recently edited first. The body keeps its line breaks. Each note shows a faded "Edited 29 Sept, 09:45" in the user's local time. |
+| N4 | **Edit:** inline, with Save and Cancel. Esc cancels, and a note with an empty title cannot be saved. Saving moves the note to the top. |
+| N5 | **Delete:** an inline "Confirm delete" step with Cancel. No modal. |
+| N6 | **Persistence:** notes are saved to the database, and a refresh shows the same notes. |
+
+- Timestamps leave the API as UTC ending in `Z`, on SQLite as well as
+  Postgres, and are shown in local time.
+- Notes follow the same saving rules as tasks: the screen updates first, and a
+  failed save is undone with the save-error message.
 
 ## Parser specification
 
@@ -158,6 +178,9 @@ Today is fixed as **Monday 28 Sep 2026**. Every row is a test.
 - **Empty list:** "Nothing to do yet. Add your first task above."
 - **Save error:** undo the on-screen change and show "Couldn't save that change.
   Check your connection and try again."
+- **Empty notes:** "No notes yet. Add your first note above."
+- **Notes load error:** "Couldn't load your notes. Check your connection and try
+  again." Cached notes stay on screen if there are any.
 
 ## Success criteria
 

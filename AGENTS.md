@@ -83,6 +83,7 @@ npm run build
 | M2 | `due-dates` | Manual due date picker, due-date badge, overdue and due-today states, overdue count. |
 | M3 | `smart-add` | Parser, `POST /api/parse`, preview chip, Smart dates toggle. |
 | M4 | `polish` | README, empty and error states, mobile check, final deploy. |
+| M5 | `notes` | Notes tab (mandatory, added 29 Sep): tabs in the URL hash, notes table and `/api/notes`, notes UI. Notes moved into scope in `PRD.md`. |
 | Stretch | `priority` | Only after M4 is merged. |
 
 Merge each milestone before starting the next. If M3 is not merged by the
