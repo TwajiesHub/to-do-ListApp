@@ -17,3 +17,15 @@ body {
   margin: 0 auto;
   padding: 16px;
 }
+
+/* Plain layout only. The TASTE.md styling comes in the next commit. */
+.todo-list { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: center; gap: 8px; }
+.todo-item.is-pending { opacity: 0.5; }
+.todo-title { flex: 1; text-align: left; background: none; border: 0; font: inherit; color: inherit; }
+.check-box { width: 24px; height: 24px; }
+.check-outline { fill: none; stroke: currentColor; stroke-width: 2; }
+.check-tick { fill: none; stroke: currentColor; stroke-width: 2.5; visibility: hidden; }
+.check-input:checked + .check-box .check-tick { visibility: visible; }
+.check-input { position: absolute; opacity: 0; }
+.is-done .todo-title { opacity: 0.5; }
