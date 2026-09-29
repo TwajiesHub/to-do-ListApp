@@ -88,6 +88,13 @@ npm run build
 Merge each milestone before starting the next. If M3 is not merged by the
 cutoff, ship M2.
 
+### M4 extras (found during M1)
+
+- On touch screens, a single tap on a task title opens the editor (double-tap
+  is awkward on phones). Keep double-click and Enter on desktop.
+- Make dnd-kit's screen-reader announcements use task titles instead of ids
+  (`accessibility.announcements` on `DndContext`).
+
 ## Definition of done (every milestone)
 
 - [ ] `pytest` passes with no skipped tests
