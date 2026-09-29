@@ -168,8 +168,8 @@ npm run build
 - **Tests came with the code.** Each endpoint was written with its tests, every
   example in the PRD parser table is a test, and Claude Code was not allowed to
   weaken or skip a failing test.
-- **Models used:** [FILL IN: AI model(s) used, for example on claude.ai and in Claude Code]
-- **Prompts:** [FILL IN: honest prompt count]
+- **Models used:** Claude Opus 5.5 (planning and docs on claude.ai) and Claude Sonnet 5.5 (building in Claude Code)
+- **Prompts:** About 12 prompts in Claude Code, after about 70 messages of planning with Claude on claude.ai
 - **Editor:** Claude Code.
 
 ## Project documents
