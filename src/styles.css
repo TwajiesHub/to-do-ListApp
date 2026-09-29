@@ -8,6 +8,7 @@
 
   --margin-width: 44px;
   --row-height: 48px;
+  --preview-height: 40px;
   --radius: 6px;
   --tick-draw-ms: 250ms;
 }
@@ -90,12 +91,24 @@ button {
 /* Add task */
 
 .add-task {
+  padding: 8px 0 0;
+}
+
+.add-task-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  padding: 8px 0 16px;
+}
+
+/* Room for the Smart dates preview chip (M3), so it can appear without moving the list. */
+.add-task-preview {
+  min-height: var(--preview-height);
+  padding: 4px 0;
 }
 
 .add-task-input,
+.add-task-date,
+.due-input,
 .edit-input {
   min-width: 0;
   min-height: 44px;
@@ -106,7 +119,12 @@ button {
 }
 
 .add-task-input {
+  flex: 1 1 100%;
+}
+
+.add-task-date {
   flex: 1;
+  min-width: 0;
 }
 
 .add-task-input::placeholder {
@@ -155,6 +173,12 @@ button {
   background: var(--marking-red);
   opacity: 0.4;
   pointer-events: none;
+}
+
+.todo-item.is-overdue::before {
+  left: calc(var(--margin-width) - 1px);
+  width: 3px;
+  opacity: 1;
 }
 
 .todo-item.is-pending {
@@ -242,11 +266,19 @@ button {
 
 /* Title */
 
-.todo-title {
+.todo-main {
   flex: 1;
   min-width: 0;
-  min-height: var(--row-height);
-  padding: 0 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.todo-title {
+  flex: 1 1 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 4px 8px 0;
   border: 0;
   background: none;
   text-align: left;
@@ -255,8 +287,55 @@ button {
 }
 
 .edit-input {
-  flex: 1;
+  flex: 1 1 100%;
   margin: 2px 8px;
+}
+
+/* Due dates. On narrow screens they sit under the title. */
+
+.due-badge,
+.add-date-button {
+  flex: 1 1 100%;
+  min-height: 32px;
+  padding: 0 8px 4px;
+  border: 0;
+  background: none;
+  color: var(--faded-ink);
+  font-size: 14px;
+  text-align: left;
+}
+
+.due-badge.is-today {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.due-badge.is-overdue {
+  color: var(--marking-red);
+  font-weight: 700;
+}
+
+.is-done .due-badge {
+  color: var(--faded-ink);
+  font-weight: 400;
+}
+
+.add-date-button:disabled,
+.due-badge:disabled {
+  cursor: not-allowed;
+}
+
+.due-editor {
+  flex: 1 1 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 4px;
+}
+
+.due-input {
+  min-height: 36px;
+  font-size: 14px;
 }
 
 .is-done .todo-title {
@@ -292,6 +371,10 @@ button {
   font-size: 14px;
 }
 
+.overdue-count {
+  color: var(--marking-red);
+}
+
 .footer .button-text {
   font-size: 14px;
 }
@@ -299,6 +382,37 @@ button {
 @media (min-width: 640px) {
   .page {
     padding: 48px 16px;
+  }
+
+  .add-task-input {
+    flex: 1;
+  }
+
+  .add-task-date {
+    flex: none;
+  }
+
+  .todo-main {
+    flex-wrap: nowrap;
+  }
+
+  .todo-title,
+  .edit-input {
+    flex: 1;
+    min-height: var(--row-height);
+    padding-top: 0;
+  }
+
+  .due-badge,
+  .add-date-button {
+    flex: none;
+    padding: 0 12px;
+    text-align: right;
+  }
+
+  .due-editor {
+    flex: none;
+    padding: 0 8px;
   }
 }
 

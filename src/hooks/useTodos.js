@@ -78,16 +78,16 @@ export function useTodos() {
     }
   }, [])
 
-  const add = useCallback(async (title) => {
+  const add = useCallback(async (title, dueDate = null) => {
     const tempId = nextTempId--
     setError(null)
     setTodos((current) => {
       const position = Math.max(-1, ...current.map((t) => t.position)) + 1
-      const temp = { id: tempId, title, done: false, position, due_date: null, created_at: '' }
+      const temp = { id: tempId, title, done: false, position, due_date: dueDate, created_at: '' }
       return [...current, temp]
     })
     try {
-      const saved = await api.createTodo({ title })
+      const saved = await api.createTodo({ title, due_date: dueDate })
       setTodos((current) => current.map((t) => (t.id === tempId ? saved : t)))
       return true
     } catch {
@@ -113,6 +113,16 @@ export function useTodos() {
         () => patchLocal(todo.id, { title }),
         () => api.updateTodo(todo.id, { title }),
         () => patchLocal(todo.id, { title: todo.title }),
+      ),
+    [optimistic, patchLocal],
+  )
+
+  const setDueDate = useCallback(
+    (todo, dueDate) =>
+      optimistic(
+        () => patchLocal(todo.id, { due_date: dueDate }),
+        () => api.updateTodo(todo.id, { due_date: dueDate }),
+        () => patchLocal(todo.id, { due_date: todo.due_date }),
       ),
     [optimistic, patchLocal],
   )
@@ -159,6 +169,7 @@ export function useTodos() {
     add,
     toggle,
     rename,
+    setDueDate,
     remove,
     clearCompleted,
     reorder,

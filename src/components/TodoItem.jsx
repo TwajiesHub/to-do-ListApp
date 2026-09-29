@@ -1,12 +1,24 @@
 import { useRef, useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { isDueToday, isOverdue } from '../dates.js'
 import { isPending } from '../hooks/useTodos.js'
+import DueDate from './DueDate.jsx'
 
-export default function TodoItem({ todo, reorderLocked, onToggle, onDelete, onRename }) {
+export default function TodoItem({
+  todo,
+  today,
+  reorderLocked,
+  onToggle,
+  onDelete,
+  onRename,
+  onSetDueDate,
+}) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(todo.title)
   const pending = isPending(todo)
+  const overdue = isOverdue(todo, today)
+  const dueToday = isDueToday(todo, today)
 
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } =
     useSortable({ id: todo.id, disabled: reorderLocked })
@@ -53,6 +65,7 @@ export default function TodoItem({ todo, reorderLocked, onToggle, onDelete, onRe
     'todo-item',
     todo.done ? 'is-done' : '',
     pending ? 'is-pending' : '',
+    overdue ? 'is-overdue' : '',
     isDragging ? 'is-dragging' : '',
   ].join(' ')
 
@@ -88,27 +101,36 @@ export default function TodoItem({ todo, reorderLocked, onToggle, onDelete, onRe
         </svg>
       </label>
 
-      {editing ? (
-        <input
-          className="edit-input"
-          type="text"
-          aria-label={`Edit task: ${todo.title}`}
-          maxLength={200}
-          autoFocus
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={handleEditKeyDown}
-          onBlur={() => finishEditing(true)}
+      <div className="todo-main">
+        {editing ? (
+          <input
+            className="edit-input"
+            type="text"
+            aria-label={`Edit task: ${todo.title}`}
+            maxLength={200}
+            autoFocus
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={handleEditKeyDown}
+            onBlur={() => finishEditing(true)}
+          />
+        ) : (
+          <button
+            className="todo-title"
+            onDoubleClick={startEditing}
+            onKeyDown={handleTitleKeyDown}
+          >
+            {todo.title}
+          </button>
+        )}
+        <DueDate
+          todo={todo}
+          overdue={overdue}
+          dueToday={dueToday}
+          disabled={pending}
+          onChange={(dueDate) => onSetDueDate(todo, dueDate)}
         />
-      ) : (
-        <button
-          className="todo-title"
-          onDoubleClick={startEditing}
-          onKeyDown={handleTitleKeyDown}
-        >
-          {todo.title}
-        </button>
-      )}
+      </div>
 
       <button
         className="delete-button"

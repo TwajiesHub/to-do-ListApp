@@ -58,12 +58,14 @@ backend.
 │   ├── dates.js          today-in-local-time and date formatting helpers
 │   ├── hooks/
 │   │   ├── useTodos.js   list state, optimistic updates, cache
+│   │   ├── useToday.js   local date, refreshed so overdue states stay correct
 │   │   └── useSmartParse.js  debounced parsing, stale-response guard
 │   ├── components/
 │   │   ├── Header.jsx        title and Smart dates toggle
-│   │   ├── AddTask.jsx       input, date picker, preview chip
+│   │   ├── AddTask.jsx       input, date picker, preview chip (slot reserved for M3)
 │   │   ├── TodoList.jsx      dnd-kit sortable list
-│   │   ├── TodoItem.jsx      handle, checkbox, title/inline edit, badge, delete
+│   │   ├── TodoItem.jsx      handle, checkbox, title/inline edit, delete
+│   │   ├── DueDate.jsx       due-date badge, "Add date" button and inline date editor
 │   │   └── Footer.jsx        counter and Clear completed
 │   └── styles.css
 ├── index.html
@@ -173,7 +175,8 @@ Notes:
   `YYYY-MM-DD`. Do **not** use `toISOString()`, which gives the UTC date and is
   wrong between midnight and 01:00 WAT. `formatDue()` uses
   `Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })`,
-  which gives "Fri 2 Oct".
+  which gives "Fri 2 Oct" (September comes out as "Sept"). `isOverdue()` and
+  `isDueToday()` compare `YYYY-MM-DD` strings, and done tasks are never either.
 - **`src/hooks/useTodos.js`**: holds the ordered array of todos. On load it
   shows the cached list from localStorage (`tick.todos.v1`), then refreshes from
   the server. Add, toggle, edit, delete, reorder and clear are optimistic, with
@@ -182,6 +185,16 @@ Notes:
 - **`src/hooks/useSmartParse.js`**: waits 300ms after typing stops, then calls
   `/api/parse`. A request counter ignores responses for older text. Exposes
   `parseNow()` for use when Add is pressed while the preview is stale.
+- **`src/hooks/useToday.js`**: returns `todayLocal()` and refreshes it every
+  minute and when the tab becomes visible, so a tab left open past midnight
+  stays correct.
+- **`src/components/DueDate.jsx`**: the badge ("Fri 2 Oct", "Today" or "Overdue"),
+  the "Add date" button for tasks without a date, and the inline editor. The
+  editor's date input is uncontrolled and saves on each valid change (years
+  below 1000 are ignored while typing). Esc, Enter or blur closes it.
+- **`AddTask`** keeps the typed date in one `dueDate` state, so Smart dates (M3)
+  can set it the same way the picker does. The empty `.add-task-preview` slot
+  under the input is reserved for the preview chip.
 - **Overdue** means `due_date < todayLocal()` and not done.
 - **Toggle** is stored in localStorage as `tick.smartDates`, default `true`.
 

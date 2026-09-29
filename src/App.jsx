@@ -3,6 +3,7 @@ import Footer from './components/Footer.jsx'
 import Header from './components/Header.jsx'
 import TodoList from './components/TodoList.jsx'
 import { useTodos } from './hooks/useTodos.js'
+import { useToday } from './hooks/useToday.js'
 
 export default function App() {
   const {
@@ -14,10 +15,12 @@ export default function App() {
     add,
     toggle,
     rename,
+    setDueDate,
     remove,
     clearCompleted,
     reorder,
   } = useTodos()
+  const today = useToday()
 
   return (
     <main className="page">
@@ -40,13 +43,15 @@ export default function App() {
 
       <TodoList
         todos={todos}
+        today={today}
         onToggle={toggle}
         onDelete={remove}
         onRename={rename}
+        onSetDueDate={setDueDate}
         onReorder={reorder}
       />
 
-      {loaded && todos.length > 0 && <Footer todos={todos} onClearCompleted={clearCompleted} />}
+      {loaded && todos.length > 0 && <Footer todos={todos} today={today} onClearCompleted={clearCompleted} />}
     </main>
   )
 }

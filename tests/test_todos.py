@@ -23,6 +23,15 @@ def test_list_todos_returns_todos_sorted_by_position(client):
     assert titles(client) == ["first", "second"]
 
 
+def test_list_todos_includes_due_dates(client):
+    add_todo(client, "dated", due_date="2026-10-02")
+    add_todo(client, "undated")
+
+    todos = client.get("/api/todos").json()
+
+    assert [todo["due_date"] for todo in todos] == ["2026-10-02", None]
+
+
 # POST /api/todos
 
 

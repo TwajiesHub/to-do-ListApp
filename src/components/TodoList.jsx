@@ -15,7 +15,15 @@ import {
 import { isPending } from '../hooks/useTodos.js'
 import TodoItem from './TodoItem.jsx'
 
-export default function TodoList({ todos, onToggle, onDelete, onRename, onReorder }) {
+export default function TodoList({
+  todos,
+  today,
+  onToggle,
+  onDelete,
+  onRename,
+  onSetDueDate,
+  onReorder,
+}) {
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -39,10 +47,12 @@ export default function TodoList({ todos, onToggle, onDelete, onRename, onReorde
             <TodoItem
               key={todo.id}
               todo={todo}
+              today={today}
               reorderLocked={reorderLocked}
               onToggle={onToggle}
               onDelete={onDelete}
               onRename={onRename}
+              onSetDueDate={onSetDueDate}
             />
           ))}
         </ul>
