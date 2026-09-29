@@ -32,6 +32,24 @@ export default function TodoList({
   // A reorder sends every id, so wait until no task is still waiting for its real id.
   const reorderLocked = todos.some(isPending)
 
+  // Screen readers hear task titles and positions, not dnd-kit's default ids.
+  const titleOf = (id) => todos.find((t) => t.id === id)?.title ?? 'Task'
+  const positionOf = (id) => todos.findIndex((t) => t.id === id) + 1
+  const where = (id) => `position ${positionOf(id)} of ${todos.length}`
+  const announcements = {
+    onDragStart: ({ active }) =>
+      `Picked up ${titleOf(active.id)}. Position ${positionOf(active.id)} of ${todos.length}.`,
+    // Over itself means nothing has moved yet, so keep "Picked up" on screen.
+    onDragOver: ({ active, over }) =>
+      over && over.id !== active.id ? `${titleOf(active.id)} moved to ${where(over.id)}.` : undefined,
+    onDragEnd: ({ active, over }) =>
+      over
+        ? `${titleOf(active.id)} dropped at ${where(over.id)}.`
+        : `${titleOf(active.id)} dropped.`,
+    onDragCancel: ({ active }) =>
+      `Reorder cancelled. ${titleOf(active.id)} is back at ${where(active.id)}.`,
+  }
+
   function handleDragEnd({ active, over }) {
     if (!over || active.id === over.id) return
     const from = todos.findIndex((t) => t.id === active.id)
@@ -40,7 +58,12 @@ export default function TodoList({
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      accessibility={{ announcements }}
+      onDragEnd={handleDragEnd}
+    >
       <SortableContext items={todos.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <ul className="todo-list">
           {todos.map((todo) => (

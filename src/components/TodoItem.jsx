@@ -27,6 +27,7 @@ export default function TodoItem({
   // this flag stops that blur from saving after Esc has cancelled. It is a ref, not
   // state, so the blur handler sees the new value straight away.
   const finished = useRef(false)
+  const lastPointerType = useRef(null)
 
   function startEditing() {
     if (pending) return
@@ -51,6 +52,18 @@ export default function TodoItem({
       event.preventDefault()
       finishEditing(false)
     }
+  }
+
+  // A single tap edits on touch screens, where double-tapping is awkward. A mouse
+  // still needs a double-click, and the keyboard uses Enter (see handleTitleKeyDown).
+  function handleTitlePointerDown(event) {
+    lastPointerType.current = event.pointerType
+  }
+
+  function handleTitleClick() {
+    const touched = lastPointerType.current === 'touch' || lastPointerType.current === 'pen'
+    lastPointerType.current = null
+    if (touched) startEditing()
   }
 
   function handleTitleKeyDown(event) {
@@ -117,6 +130,8 @@ export default function TodoItem({
         ) : (
           <button
             className="todo-title"
+            onPointerDown={handleTitlePointerDown}
+            onClick={handleTitleClick}
             onDoubleClick={startEditing}
             onKeyDown={handleTitleKeyDown}
           >
