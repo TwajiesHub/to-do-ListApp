@@ -45,7 +45,7 @@ export default function AddTask({ onAdd }) {
           Add task
         </button>
       </div>
-      {/* Reserved for the Smart dates preview chip (M3), so it can appear without moving the list. */}
+      {/* Slot for the Smart dates preview chip (M3). It takes no space while empty. */}
       <div className="add-task-preview" aria-live="polite" />
     </form>
   )

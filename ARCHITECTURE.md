@@ -62,7 +62,7 @@ backend.
 │   │   └── useSmartParse.js  debounced parsing, stale-response guard
 │   ├── components/
 │   │   ├── Header.jsx        title and Smart dates toggle
-│   │   ├── AddTask.jsx       input, date picker, preview chip (slot reserved for M3)
+│   │   ├── AddTask.jsx       input, date picker, preview chip (empty slot for M3)
 │   │   ├── TodoList.jsx      dnd-kit sortable list
 │   │   ├── TodoItem.jsx      handle, checkbox, title/inline edit, delete
 │   │   ├── DueDate.jsx       due-date badge, "Add date" button and inline date editor
@@ -194,7 +194,7 @@ Notes:
   below 1000 are ignored while typing). Esc, Enter or blur closes it.
 - **`AddTask`** keeps the typed date in one `dueDate` state, so Smart dates (M3)
   can set it the same way the picker does. The empty `.add-task-preview` slot
-  under the input is reserved for the preview chip.
+  under the input is for the preview chip and takes no space while empty.
 - **Overdue** means `due_date < todayLocal()` and not done.
 - **Toggle** is stored in localStorage as `tick.smartDates`, default `true`.
 

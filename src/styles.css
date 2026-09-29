@@ -8,7 +8,6 @@
 
   --margin-width: 44px;
   --row-height: 48px;
-  --preview-height: 40px;
   --radius: 6px;
   --tick-draw-ms: 250ms;
 }
@@ -91,7 +90,7 @@ button {
 /* Add task */
 
 .add-task {
-  padding: 8px 0 0;
+  padding: 8px 0 16px;
 }
 
 .add-task-row {
@@ -100,10 +99,10 @@ button {
   gap: 8px;
 }
 
-/* Room for the Smart dates preview chip (M3), so it can appear without moving the list. */
-.add-task-preview {
-  min-height: var(--preview-height);
-  padding: 4px 0;
+/* Slot for the Smart dates preview chip (M3). Empty, it has no height, so it leaves no gap. */
+.add-task-preview:empty {
+  display: block;
+  height: 0;
 }
 
 .add-task-input,
